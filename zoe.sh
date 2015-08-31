@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/ash
 
 export ZOE_HOME=$(pwd)
 export ZOE_LOGS=${ZOE_HOME}/logs
@@ -35,14 +35,17 @@ function launch_agent() {
     do
         if [[ -f "$script" ]] && [[ -x "$script" ]]
         then
-            echo "Launching agent $name ($script)..."
+            echo -en "> \E[1m$name\E[0m ($script)..."
             ./${script} > ${ZOE_LOGS}/$name.log 2>&1 &
             sleep 1
+            echo -e "\E[1;32mOK\E[0m"
         fi
+
+
     done
     popd > /dev/null 2>&1
 
-    echo "$!" > ${ZOE_VAR}/$name.pid 
+    echo "$!" > ${ZOE_VAR}/$name.pid
 }
 
 #
@@ -60,22 +63,24 @@ function restart_agent() {
 # Starts the server
 #
 function server() {
-    echo "Starting server..."
+    echo -n "Starting server... "
     launch_server > ${ZOE_VAR}/server.pid
     sleep 5
+    echo -e "\E[1;32mOK\E[0m (\E[1m$ZOE_SERVER_PORT\E[0m)"
+    echo ""
 }
 
 #
 # Starts your beautiful Zoe agents
 #
 function start() {
-    echo "Starting agents..."
     pushd ${ZOE_HOME}/agents > /dev/null 2>&1
+    echo -e "Launching agents... (\E[1;33m`find ${ZOE_HOME}/agents -maxdepth 1 -not -path "[.|..]" -type d | wc -l`\E[0m agents found)"
     for f in *
     do
         if [[ -d "$f" ]]
         then
-            popd >/dev/null 2>&1
+            popd > /dev/null 2>&1
             launch_agent $f
             pushd ${ZOE_HOME}/agents > /dev/null 2>&1
         fi
@@ -131,9 +136,9 @@ function status() {
           r=$?
           if [[ "$r" == "0" ]]
           then
-            echo "ALIVE $name (pid $pid)"
+            echo -e "\E[1;32mALIVE\E[0m $name (pid \E[1m$pid\E[0m)"
           else
-            echo "DEAD! $name"
+            echo -e "\E[1;31mDEAD!\E[0m $name"
           fi
       fi
   done
@@ -162,17 +167,17 @@ case "$1" in
   "server" )
     server
     ;;
-  "start" ) 
+  "start" )
     server
     start
     ;;
-  "stop" ) 
+  "stop" )
     stop
     ;;
   "status" )
     status
     ;;
-  "restart" ) 
+  "restart" )
     stop
     start
     ;;
