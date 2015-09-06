@@ -1,4 +1,4 @@
-!/bin/ash
+#!/bin/bash
 
 export ZOE_HOME=$(pwd)
 export ZOE_LOGS=${ZOE_HOME}/logs
@@ -35,7 +35,7 @@ function launch_agent() {
     do
         if [[ -f "$script" ]] && [[ -x "$script" ]]
         then
-            echo -en "> \E[1m$name\E[0m ($script)..."
+            echo -en " * \E[1m$name\E[0m ($script)..."
             ./${script} > ${ZOE_LOGS}/$name.log 2>&1 &
             sleep 1
             echo -e "\E[1;32mOK\E[0m"
@@ -64,10 +64,15 @@ function restart_agent() {
 #
 function server() {
     echo -n "Starting server... "
-    launch_server > ${ZOE_VAR}/server.pid
-    sleep 5
-    echo -e "\E[1;32mOK\E[0m (\E[1m$ZOE_SERVER_PORT\E[0m)"
-    echo ""
+    if [ -z $ZOE_SERVER_PORT ]
+    then
+        echo -e "\E[1;31mFAIL\E[0m Server port is not set!"
+        exit 1
+    else
+        launch_server > ${ZOE_VAR}/server.pid
+        sleep 5
+        echo -e "\E[1;32mOK\E[0m (\E[1m$ZOE_SERVER_PORT\E[0m)"
+    fi
 }
 
 #
